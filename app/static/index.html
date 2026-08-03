@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>wxalpha</title>
+<meta name="wxalpha-build" content="__VERSION__">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#070D16; --panel:#0E1725; --panel2:#131F30; --line:#1D2B3F;
+  --fog:#7B90AC; --dim:#546881; --paper:#DEE8F5;
+  --deep:#8B6FE8; --ice:#7C8CF0; --cold:#58C6F0; --mild:#6FD39B; --neutral:#9FB2CA;
+  --warm:#F0B23F; --hot:#F2704A; --ember:#D8425F;
+  --up:#6FD39B; --down:#F2704A;
+  --r:3px;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --sans:'Archivo',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink); color:var(--paper); font-family:var(--sans);
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(1200px 500px at 15% -10%, #10243A 0%, transparent 70%);
+}
+a{color:var(--cold)}
+.wrap{max-width:1320px;margin:0 auto;padding:0 20px 80px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .down{color:var(--down)} .muted{color:var(--fog)}
+
+/* ---------- masthead ---------- */
+.mast{
+  display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  padding:18px 0 16px;border-bottom:1px solid var(--line);
+}
+.mark{font-weight:800;font-size:19px;letter-spacing:.22em;text-transform:uppercase}
+.mark span{color:var(--cold)}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--mild);
+  box-shadow:0 0 0 0 rgba(111,211,155,.6);animation:p 2.4s infinite}
+.pulse.bad{background:var(--hot);animation:none}
+@keyframes p{70%{box-shadow:0 0 0 9px rgba(111,211,155,0)}100%{box-shadow:0 0 0 0 rgba(111,211,155,0)}}
+.mast-eq{margin-left:auto;display:flex;align-items:baseline;gap:12px}
+.mast-eq b{font-family:var(--mono);font-size:26px;font-weight:500;letter-spacing:-.01em}
+.pill{
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  padding:4px 9px;border:1px solid var(--line);border-radius:var(--r);color:var(--fog);
+}
+.pill.live{border-color:var(--hot);color:var(--hot)}
+.pill.halt{border-color:var(--warm);color:var(--warm)}
+button{
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;color:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);padding:7px 13px;cursor:pointer;transition:.14s;
+}
+button:hover{border-color:var(--cold);color:var(--cold)}
+button:focus-visible{outline:2px solid var(--cold);outline-offset:2px}
+button.warn:hover{border-color:var(--warm);color:var(--warm)}
+button.danger:hover{border-color:var(--hot);color:var(--hot)}
+button.solid{background:var(--cold);color:#04121C;border-color:var(--cold);font-weight:700}
+button.solid:hover{filter:brightness(1.12);color:#04121C}
+
+/* ---------- signature: isotherm ribbon ---------- */
+.ribbon{padding:24px 0 6px;border-bottom:1px solid var(--line)}
+.ribbon-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.ribbon-head h2{margin:0;font-size:15px;font-weight:600;letter-spacing:.01em}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--dim)}
+.bands{display:flex;gap:3px;align-items:flex-end;height:132px}
+.band{flex:1;position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+  min-width:0}
+.band .fill{border-radius:2px 2px 0 0;transition:height .5s cubic-bezier(.2,.7,.3,1)}
+.band .mkt{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--paper);
+  opacity:.75}
+.band .mkt::after{content:attr(data-p);position:absolute;right:2px;top:-13px;
+  font-family:var(--mono);font-size:9px;color:var(--paper);opacity:.8}
+.band .lbl{font-family:var(--mono);font-size:10px;color:var(--fog);text-align:center;
+  padding-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.band .pv{position:absolute;left:0;right:0;bottom:5px;text-align:center;
+  font-family:var(--mono);font-size:10px;color:#04121C;font-weight:700}
+.legend{display:flex;gap:18px;font-family:var(--mono);font-size:10px;color:var(--dim);
+  padding:14px 0 4px;letter-spacing:.06em}
+.legend i{display:inline-block;width:14px;height:2px;background:var(--cold);
+  margin-right:6px;vertical-align:middle}
+.legend i.dash{background:none;border-top:1px dashed var(--paper)}
+
+/* ---------- channel strip ---------- */
+.strip{display:flex;gap:0;margin:26px 0 0;border-bottom:1px solid var(--line);
+  overflow-x:auto;scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.chan{
+  flex:1;min-width:120px;text-align:left;padding:14px 16px 13px;cursor:pointer;
+  border:none;border-bottom:2px solid transparent;background:transparent;
+  text-transform:none;letter-spacing:0;font-family:var(--sans);
+}
+.chan .n{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim)}
+.chan .t{font-size:15px;font-weight:600;margin:3px 0 2px}
+.chan .v{font-family:var(--mono);font-size:12px;color:var(--fog)}
+.chan:hover{background:var(--panel);color:inherit}
+.chan[aria-selected="true"]{background:var(--panel);border-bottom-color:var(--k)}
+.chan[aria-selected="true"] .n{color:var(--k)}
+.chan.off .t,.chan.off .v{opacity:.4}
+
+/* ---------- panels ---------- */
+.head{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;padding:26px 0 4px}
+.head h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em}
+.head p{margin:8px 0 0;max-width:62ch;color:var(--fog);font-size:13.5px}
+.head .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);margin:22px 0;
+  border-radius:var(--r);overflow:hidden}
+.kpi{background:var(--panel);padding:13px 15px}
+.kpi dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--dim);margin:0}
+.kpi dd{margin:6px 0 0;font-family:var(--mono);font-size:19px;font-weight:500;
+  transition:color .2s}
+.kpi dd.tick{animation:tick .9s ease-out}
+@keyframes tick{0%{background:rgba(88,198,240,.22)}100%{background:transparent}}
+.kpi.now dt{color:var(--k)}
+
+.grid{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  overflow:hidden;margin-bottom:18px}
+.card h3{margin:0;padding:12px 15px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--fog);
+  border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.card .body{padding:15px}
+.empty{padding:26px 15px;color:var(--dim);font-size:13px;text-align:center}
+
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+th{text-align:left;color:var(--dim);font-weight:400;font-size:9.5px;
+  letter-spacing:.13em;text-transform:uppercase;padding:9px 15px;
+  border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 15px;border-bottom:1px solid rgba(29,43,63,.5);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.r,th.r{text-align:right}
+tbody tr:hover{background:var(--panel2)}
+.q{font-family:var(--sans);font-size:12.5px;color:var(--paper);
+  max-width:320px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.why{font-family:var(--sans);font-size:11.5px;color:var(--fog);display:block;
+  margin-top:3px;max-width:420px}
+tr.skip td{opacity:.42}
+.tag{font-size:9px;letter-spacing:.1em;padding:2px 6px;border-radius:2px;
+  border:1px solid var(--line);color:var(--fog)}
+.tag.buy{border-color:rgba(111,211,155,.5);color:var(--up)}
+.tag.sell{border-color:rgba(242,112,74,.5);color:var(--down)}
+
+/* controls */
+.ctrl{display:grid;grid-template-columns:1fr 92px;gap:9px 12px;align-items:center}
+.ctrl label{font-size:12.5px;color:var(--fog)}
+.ctrl label small{display:block;color:var(--dim);font-size:10.5px}
+.ctrl input{
+  width:100%;background:var(--ink);border:1px solid var(--line);color:var(--paper);
+  font-family:var(--mono);font-size:12px;padding:6px 8px;border-radius:var(--r);
+  text-align:right;
+}
+.ctrl input:focus{outline:none;border-color:var(--k)}
+.ctrl-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.saved{font-family:var(--mono);font-size:10px;color:var(--up);letter-spacing:.1em;
+  opacity:0;transition:.3s}
+.saved.on{opacity:1}
+
+.spark{width:100%;height:190px;display:block}
+.logline{font-family:var(--mono);font-size:11px;padding:5px 15px;
+  border-bottom:1px solid rgba(29,43,63,.4);color:var(--fog)}
+.logline b{color:var(--dim);font-weight:400;margin-right:9px}
+.logline.error{color:var(--hot)} .logline.warn{color:var(--warm)}
+footer{padding:34px 0 0;color:var(--dim);font-size:11.5px;font-family:var(--mono);
+  border-top:1px solid var(--line);margin-top:34px;display:flex;gap:22px;flex-wrap:wrap}
+aside{position:sticky;top:14px}
+@media(max-width:900px){aside{position:static}}
+@media(max-width:620px){
+  .bands{height:96px}
+  .band .lbl{font-size:9px}
+  .band .pv{font-size:9px}
+  .mast{gap:12px}
+  .mast-eq{width:100%;margin-left:0;justify-content:space-between}
+  .mast-eq b{font-size:21px}
+  .head h1{font-size:24px}
+  .card .q{max-width:150px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div class="mark">wx<span>alpha</span></div>
+    <div class="pulse" id="pulse" title="engine"></div>
+    <div class="eyebrow" id="engine-line">connecting</div>
+    <div class="mast-eq">
+      <div style="text-align:right">
+        <div class="eyebrow">book equity</div>
+        <b id="eq" class="mono">—</b>
+      </div>
+      <div style="text-align:right">
+        <div class="eyebrow">since start</div>
+        <b id="pnl" class="mono">—</b>
+      </div>
+    </div>
+    <span class="pill" id="mode">paper</span>
+    <button id="halt" class="warn">halt</button>
+    <button id="export" class="solid">download data</button>
+  </header>
+
+  <section class="ribbon">
+    <div class="ribbon-head">
+      <span class="eyebrow">next settlement</span>
+      <h2 id="rib-title">waiting for the first market scan</h2>
+      <span class="eyebrow" id="rib-sub"></span>
+    </div>
+    <div class="bands" id="bands"></div>
+    <div class="legend">
+      <span><i></i>model probability</span>
+      <span><i class="dash"></i>market mid</span>
+      <span id="rib-note"></span>
+    </div>
+  </section>
+
+  <nav class="strip" id="strip" role="tablist"></nav>
+  <main id="panel"></main>
+
+  <footer>
+    <span id="foot-db">—</span>
+    <span id="foot-mk">—</span>
+    <span id="foot-tick">—</span>
+    <span>polymarket weather · <span id="foot-mode">paper</span></span>
+    <span id="foot-ver">build __VERSION__</span>
+  </footer>
+</div>
+
+<script>
+const HUE = {deep:'--deep', ice:'--ice', cold:'--cold', mild:'--mild', neutral:'--neutral',
+             warm:'--warm', hot:'--hot', ember:'--ember'};
+const $ = s => document.querySelector(s);
+const fmt = (n,d=2) => (n===null||n===undefined||isNaN(n)) ? '—'
+  : Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd = n => (n<0?'-$':'$') + fmt(Math.abs(n));
+const pct = n => (n===null||n===undefined) ? '—' : (n>0?'+':'') + fmt(n,1) + '%';
+const sgn = n => n>0?'up':(n<0?'down':'');
+const ago = ts => { const s=Math.max(0,Date.now()/1000-ts);
+  if(s<60) return Math.floor(s)+'s'; if(s<3600) return Math.floor(s/60)+'m';
+  if(s<86400) return Math.floor(s/3600)+'h'; return Math.floor(s/86400)+'d'; };
+const esc = s => String(s??'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+
+let SPEC=null, ACTIVE=localStorage.getItem('wx.tab')||'s1', STATE=null, DIRTY=false;
+
+async function api(path, opts){
+  const r = await fetch(path, opts);
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+/* ---------- masthead + channel strip ---------- */
+function renderTop(s){
+  STATE = s;
+  const e = s.engine;
+  $('#pulse').className = 'pulse' + (e.halted||!e.running ? ' bad':'');
+  $('#engine-line').textContent = e.halted
+    ? 'halted — ' + (e.halt_reason||'')
+    : `tick ${e.tick} · ${e.markets} markets · ${e.events} events`;
+  $('#eq').textContent = usd(s.total.equity);
+  const p = $('#pnl');
+  p.textContent = usd(s.total.pnl) + '  ' + pct(s.total.ret);
+  p.className = 'mono ' + sgn(s.total.pnl);
+  const mode = $('#mode');
+  mode.textContent = e.live ? 'live money' : 'paper';
+  mode.className = 'pill' + (e.live?' live':'');
+  $('#halt').textContent = e.halted ? 'resume' : 'halt';
+  $('#halt').className = e.halted ? 'solid' : 'warn';
+  $('#foot-db').textContent = `db ${e.db_mb} mb`;
+  $('#foot-mk').textContent = `${e.markets} live markets`;
+  $('#foot-tick').textContent = e.last_tick ? `last tick ${ago(e.last_tick)} ago`:'idle';
+  $('#foot-mode').textContent = e.live?'live':'paper';
+
+  const strip = $('#strip');
+  strip.innerHTML = s.strategies.map((st,i)=>`
+    <button class="chan ${st.enabled?'':'off'}" role="tab" data-id="${st.id}"
+      aria-selected="${st.id===ACTIVE}" style="--k:var(${HUE[st.hue]})">
+      <div class="n">${String(i+1).padStart(2,'0')} ${st.enabled?'':'· paused'}</div>
+      <div class="t">${st.name}</div>
+      <div class="v ${sgn(st.pnl)}">${usd(st.pnl)} · ${pct(st.ret)}</div>
+    </button>`).join('');
+  const cur = s.strategies.find(x=>x.id===ACTIVE);
+  if(cur) patchKPIs(cur);
+  strip.querySelectorAll('.chan').forEach(b=>b.onclick=()=>{
+    if(DIRTY && !confirm('Unsaved settings on this tab. Leave anyway?')) return;
+    ACTIVE=b.dataset.id; localStorage.setItem('wx.tab',ACTIVE); DIRTY=false;
+    renderTop(STATE); loadPanel();
+  });
+}
+
+/* ---------- signature ribbon ---------- */
+function rampFor(i,n){
+  const keys=['--deep','--ice','--cold','--mild','--neutral','--warm','--hot','--ember'];
+  return keys[Math.min(keys.length-1, Math.round(i/(Math.max(1,n-1))*(keys.length-1)))];
+}
+function renderRibbon(r){
+  const box=$('#bands');
+  if(!r.buckets || !r.buckets.length){
+    box.innerHTML=''; $('#rib-note').textContent='no open buckets yet'; return;
+  }
+  $('#rib-title').textContent = r.title || 'live event';
+  $('#rib-sub').textContent = `${r.city||''} · ${r.date||''}`;
+  const max = Math.max(0.15, ...r.buckets.map(b=>Math.max(b.fair||0,b.mid||0)));
+  box.innerHTML = r.buckets.map((b,i)=>{
+    const h = ((b.fair||0)/max)*100, m = ((b.mid||0)/max)*100;
+    const c = rampFor(i, r.buckets.length);
+    return `<div class="band" title="${esc(b.label)}">
+      <div style="position:relative;height:100%">
+        <div class="fill" style="position:absolute;bottom:0;left:0;right:0;
+          height:${h.toFixed(1)}%;background:var(${c});opacity:.82"></div>
+        ${b.fair>0.04?`<div class="pv">${Math.round(b.fair*100)}</div>`:''}
+        ${b.mid!=null?`<div class="mkt" data-p="${Math.round(b.mid*100)}"
+          style="bottom:${m.toFixed(1)}%"></div>`:''}
+      </div>
+      <div class="lbl">${esc(b.label)}</div></div>`;
+  }).join('');
+  const gaps = r.buckets.filter(b=>b.fair!=null&&b.mid!=null)
+    .map(b=>Math.abs(b.fair-b.mid));
+  $('#rib-note').textContent = gaps.length
+    ? `widest gap ${(Math.max(...gaps)*100).toFixed(0)} points` : '';
+}
+
+/* ---------- sparkline ---------- */
+function spark(series, colorVar){
+  if(!series || series.length<2)
+    return '<div class="empty">The curve starts once the engine has marked a few ticks.</div>';
+  const xs=series.map(p=>p[0]), ys=series.map(p=>p[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const W=640,H=190,P=10, dy=(y1-y0)||1;
+  const X=t=>P+((t-x0)/((x1-x0)||1))*(W-2*P);
+  const Y=v=>H-P-((v-y0)/dy)*(H-2*P);
+  const d=series.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+  const area=d+` L ${X(x1).toFixed(1)} ${H-P} L ${X(x0).toFixed(1)} ${H-P} Z`;
+  const base=series[0][1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
+    role="img" aria-label="equity curve">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(${colorVar})" stop-opacity=".26"/>
+      <stop offset="100%" stop-color="var(${colorVar})" stop-opacity="0"/>
+    </linearGradient></defs>
+    <line x1="${P}" x2="${W-P}" y1="${Y(base).toFixed(1)}" y2="${Y(base).toFixed(1)}"
+      stroke="var(--line)" stroke-dasharray="3 4"/>
+    <path d="${area}" fill="url(#g)"/>
+    <path d="${d}" fill="none" stroke="var(${colorVar})" stroke-width="1.6"
+      stroke-linejoin="round"/>
+  </svg>`;
+}
+
+/* ---------- live P&L ---------- */
+const KPIS = [
+  ['equity',   d=>usd(d.equity),   d=>'',            false],
+  ['p&l',      d=>usd(d.pnl),      d=>sgn(d.pnl),    false],
+  ['today',    d=>d.day_pnl===null?'—':usd(d.day_pnl), d=>sgn(d.day_pnl), true],
+  ['unrealised', d=>usd(d.unrealized), d=>sgn(d.unrealized), true],
+  ['return',   d=>pct(d.ret),      d=>sgn(d.pnl),    false],
+  ['realised', d=>usd(d.realized), d=>sgn(d.realized), false],
+  ['open risk',d=>usd(d.open_risk!==undefined?d.open_risk:d.equity-d.cash), d=>'', false],
+  ['positions',d=>d.open_positions, d=>'',           false],
+  ['fills',    d=>d.n_trades,      d=>'',            false],
+  ['settled',  d=>d.settled,       d=>'',            false],
+  ['win rate', d=>d.win_rate===null?'—':fmt(d.win_rate,1)+'%',
+               d=>d.win_rate===null?'':(d.win_rate>=50?'up':'down'), false],
+];
+function kpiCells(d){
+  return KPIS.map(([k,val,cls,now])=>
+    `<div class="kpi ${now?'now':''}"><dt>${k}</dt>
+      <dd class="${cls(d)}" data-k="${k}">${val(d)}</dd></div>`).join('');
+}
+// patched in place on every state poll so the numbers move without a redraw
+function patchKPIs(st){
+  KPIS.forEach(([k,val,cls])=>{
+    const el=document.querySelector(`#panel dd[data-k="${CSS.escape(k)}"]`);
+    if(!el) return;
+    const next=String(val(st));
+    if(el.textContent===next) return;
+    el.textContent=next; el.className=cls(st);
+    el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+  });
+}
+
+/* ---------- strategy panel ---------- */
+async function loadPanel(){
+  const d = await api('/api/strategy/'+ACTIVE);
+  const c = HUE[d.hue];
+  const rows = (arr, cols, empty) => arr.length
+    ? `<table><thead><tr>${cols.head}</tr></thead><tbody>${arr.map(cols.row).join('')}</tbody></table>`
+    : `<div class="empty">${empty}</div>`;
+
+  $('#panel').innerHTML = `
+  <div style="--k:var(${c})">
+    <div class="head">
+      <div>
+        <h1>${d.name}</h1>
+        <p>${esc(d.detail)}</p>
+      </div>
+      <div class="acts">
+        <button id="toggle" class="${d.enabled?'warn':'solid'}">${d.enabled?'pause':'start'}</button>
+        <button id="flatten" class="danger">close all positions</button>
+        <button id="wipe" class="danger">reset book</button>
+      </div>
+    </div>
+
+    <dl class="kpis">
+      ${kpiCells(d)}
+    </dl>
+
+    <div class="grid">
+      <div>
+        <div class="card"><h3>equity <span>${d.equity_series.length} marks</span></h3>
+          ${spark(d.equity_series, c)}</div>
+
+        <div class="card"><h3>open positions</h3>
+          ${rows(d.positions, {
+            head:'<th>market</th><th class="r">side</th><th class="r">qty</th><th class="r">avg</th><th class="r">mark</th><th class="r">unreal</th>',
+            row:p=>`<tr><td><span class="q">${esc(p.question||p.market_id)}</span></td>
+              <td class="r"><span class="tag ${p.qty>0?'buy':'sell'}">${p.outcome}</span></td>
+              <td class="r">${fmt(p.qty,0)}</td><td class="r">${fmt(p.avg_price,3)}</td>
+              <td class="r">${fmt(p.mark,3)}</td>
+              <td class="r ${sgn(p.upnl)}">${usd(p.upnl)}</td></tr>`
+          }, 'Flat. Nothing open right now.')}</div>
+
+        <div class="card"><h3>recent fills</h3>
+          ${rows(d.trades.slice(0,25), {
+            head:'<th>when</th><th>market</th><th class="r">action</th><th class="r">px</th><th class="r">qty</th><th class="r">cash</th>',
+            row:t=>`<tr><td>${ago(t.ts)}</td>
+              <td><span class="q">${esc(t.label||t.question||'')}</span>
+                  <span class="why">${esc(t.note||'')}</span></td>
+              <td class="r"><span class="tag ${t.side==='BUY'?'buy':'sell'}">${t.side} ${t.outcome}</span></td>
+              <td class="r">${fmt(t.price,3)}</td><td class="r">${fmt(t.qty,0)}</td>
+              <td class="r ${sgn(t.cash)}">${usd(t.cash)}</td></tr>`
+          }, 'No fills yet. Loosen the edge threshold if this stays empty for a day.')}</div>
+
+        <div class="card"><h3>evaluations <span>including the ones it passed on</span></h3>
+          ${rows(d.signals.slice(0,30), {
+            head:'<th>when</th><th>market</th><th class="r">model</th><th class="r">market</th><th class="r">edge</th>',
+            row:s=>`<tr class="${s.taken?'':'skip'}"><td>${ago(s.ts)}</td>
+              <td><span class="q">${esc(s.label||s.question||'')}</span>
+                  <span class="why">${esc(s.reason||'')}</span></td>
+              <td class="r">${s.fair==null?'—':(s.fair*100).toFixed(0)+'%'}</td>
+              <td class="r">${s.market_p==null?'—':(s.market_p*100).toFixed(0)+'%'}</td>
+              <td class="r ${sgn(s.edge)}">${s.edge==null?'—':((s.edge>0?'+':'')+(s.edge*100).toFixed(1))}</td>
+            </tr>`
+          }, 'Nothing evaluated yet. The engine scans on every tick.')}</div>
+
+        <div class="card"><h3>settled</h3>
+          ${rows(d.settlements, {
+            head:'<th>when</th><th>market</th><th class="r">side</th><th class="r">qty</th><th class="r">cost</th><th class="r">p&l</th>',
+            row:s=>`<tr><td>${ago(s.ts)}</td>
+              <td><span class="q">${esc(s.label||s.question||'')}</span></td>
+              <td class="r">${s.outcome}</td><td class="r">${fmt(s.qty,0)}</td>
+              <td class="r">${fmt(s.avg_price,3)}</td>
+              <td class="r ${sgn(s.pnl)}">${usd(s.pnl)}</td></tr>`
+          }, 'No markets have resolved for this strategy yet.')}</div>
+      </div>
+
+      <aside>
+        <div class="card"><h3>settings <span class="saved" id="saved">saved</span></h3>
+          <div class="body">
+            <div class="ctrl" id="ctrl"></div>
+            <div class="ctrl-actions">
+              <button id="save" class="solid">save settings</button>
+              <button id="defaults">restore defaults</button>
+            </div>
+          </div>
+        </div>
+        <div class="card"><h3>market scan <span id="scan-sum"></span></h3>
+          <div id="scanlist"></div></div>
+        <div class="card"><h3>engine log</h3><div id="loglist"></div></div>
+      </aside>
+    </div>
+  </div>`;
+
+  const ctrl = $('#ctrl');
+  ctrl.innerHTML = Object.entries(d.schema).map(([k,s])=>`
+    <label for="p_${k}">${s.label}${s.help?`<small>${esc(s.help)}</small>`:''}</label>
+    <input id="p_${k}" name="${k}" type="number" step="${s.step}" min="${s.min}"
+      max="${s.max}" value="${d.params[k]}">`).join('');
+  ctrl.querySelectorAll('input').forEach(i=>i.oninput=()=>{DIRTY=true});
+
+  $('#save').onclick = async ()=>{
+    const body={}; ctrl.querySelectorAll('input').forEach(i=>body[i.name]=i.value);
+    await api(`/api/strategy/${ACTIVE}/params`,{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    DIRTY=false; const s=$('#saved'); s.classList.add('on');
+    setTimeout(()=>s.classList.remove('on'),1600);
+  };
+  $('#defaults').onclick = async ()=>{
+    Object.entries(SPEC.strategies[ACTIVE].params).forEach(([k,s])=>{
+      const el=$('#p_'+k); if(el) el.value=s.default;
+    });
+    DIRTY=true;
+  };
+  $('#toggle').onclick = async ()=>{
+    await api(`/api/strategy/${ACTIVE}/toggle`,{method:'POST'}); refresh();
+  };
+  $('#flatten').onclick = async ()=>{
+    if(!confirm('Sell every open position for this strategy at the current bid?')) return;
+    await api(`/api/strategy/${ACTIVE}/flatten`,{method:'POST'}); loadPanel();
+  };
+  $('#wipe').onclick = async ()=>{
+    if(!confirm("Erase this strategy's trades, positions and curve, back to its starting allocation?")) return;
+    try{ await api(`/api/strategy/${ACTIVE}/reset`,{method:'POST'}); loadPanel(); }
+    catch(e){ alert('Reset is off while live trading is on. Set LIVE_TRADING=false first.'); }
+  };
+  loadLog(); loadScan();
+}
+
+async function loadScan(){
+  const box=$('#scanlist'); if(!box) return;
+  try{
+    const d=await api('/api/discovery');
+    $('#scan-sum').textContent=`${d.accepted.length} in · ${d.skipped.length} out`;
+    const near=d.skipped.filter(r=>r.reason!=='not a temperature market');
+    if(!d.accepted.length && !near.length){
+      box.innerHTML='<div class="empty">Nothing scanned yet. Discovery runs on the first tick.</div>';
+      return;
+    }
+    box.innerHTML =
+      d.accepted.slice(0,6).map(r=>`<div class="logline"><b>${r.buckets}</b>${esc(r.title)}</div>`).join('')
+      + near.slice(0,8).map(r=>`<div class="logline warn"><b>skip</b>${esc(r.title)} — ${esc(r.reason)}</div>`).join('');
+  }catch(e){ box.innerHTML='<div class="empty">Scan data unavailable.</div>'; }
+}
+
+async function loadLog(){
+  const rows = await api('/api/logs?limit=40');
+  const box = $('#loglist');
+  if(!box) return;
+  box.innerHTML = rows.length ? rows.map(l=>
+    `<div class="logline ${l.level}"><b>${ago(l.ts)}</b>${esc(l.msg)}</div>`).join('')
+    : '<div class="empty">Quiet so far.</div>';
+}
+
+/* ---------- wiring ---------- */
+$('#export').onclick = ()=>{ location.href='/api/export.zip'; };
+$('#halt').onclick = async ()=>{
+  const halted = STATE?.engine?.halted;
+  await api(halted?'/api/resume':'/api/halt',{method:'POST'}); refresh();
+};
+
+async function refresh(){
+  // fetched independently: a failure in one must not blank the other, which is
+  // how a single bad float in the ribbon took the whole dashboard down
+  const [s,r] = await Promise.allSettled([api('/api/state'), api('/api/ribbon')]);
+  if(s.status==='fulfilled'){ renderTop(s.value); }
+  else {
+    $('#engine-line').textContent = 'server unreachable — retrying';
+    $('#pulse').className='pulse bad';
+  }
+  if(r.status==='fulfilled'){ renderRibbon(r.value); }
+  else { $('#rib-note').textContent = 'ribbon unavailable'; }
+}
+
+(async ()=>{
+  try{
+    const v = await api('/api/version');
+    $('#foot-ver').textContent = `v${v.version} · tick ${v.tick}`;
+  }catch(e){ $('#foot-ver').textContent = 'version unknown'; }
+  SPEC = await api('/api/spec');
+  if(!SPEC.strategies[ACTIVE]) ACTIVE = SPEC.order[0];
+  await refresh();
+  await loadPanel();
+  setInterval(refresh, 6000);
+  setInterval(()=>{ if(!DIRTY) loadPanel(); }, 30000);
+})();
+</script>
+</body>
+</html>

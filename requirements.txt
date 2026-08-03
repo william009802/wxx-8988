@@ -1,0 +1,12 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+httpx==0.28.1
+
+# py-clob-client is ONLY needed for live trading. It pulls in web3 and
+# eth-account, which need a compiler and are a common cause of failed builds on
+# slim images. Paper mode does not touch it, and app/pmclient.py guards the
+# import, so leaving it out is safe: the bot logs "live client unavailable,
+# staying in paper" if LIVE_TRADING is set without it.
+#
+# Uncomment only when you are ready to trade real money:
+# py-clob-client==0.19.0
